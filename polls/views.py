@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, render
 from django.template import loader
 from django.urls import reverse
 from django.views import generic
-from .forms import QuestionForm, ChoiceFormSet
 
 
 class IndexView(generic.ListView):
@@ -50,28 +49,3 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse("polls:results", args=(question.id,)))
-
-
-def create_question(request):
-    """View zum Erstellen einer neuen Frage mit Antwortmöglichkeiten."""
-    if request.method == 'POST':
-        question_form = QuestionForm(request.POST)
-        formset = ChoiceFormSet(request.POST)
-
-        if question_form.is_valid() and formset.is_valid():
-            question = question_form.save(commit=False)
-            question.pub_date = __import__('django.utils.timezone', fromlist=['now']).now()
-            question.save()
-
-            formset.instance = question
-            formset.save()
-
-            return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
-    else:
-        question_form = QuestionForm()
-        formset = ChoiceFormSet()
-
-    return render(request, 'polls/create_question.html', {
-        'question_form': question_form,
-        'formset': formset,
-    })
